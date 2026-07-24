@@ -17,8 +17,8 @@
             one transaction at a time.
         </p>
         <div class="hero-actions">
-            <a href="{{ url_for('register') }}" class="btn-primary">Start tracking free</a>
-            <a href="{{ url_for('login') }}" class="btn-ghost">Sign in</a>
+            <a href="{{ url_for('register') }}" class="btn-primary">Create free account</a>
+            <a href="#features" class="btn-ghost" id="seeHowItWorksBtn">See how it works</a>
         </div>
     </div>
     <div class="hero-visual">
@@ -61,7 +61,7 @@
     </div>
 </section>
 
-<section class="features">
+<section id="features" class="features">
     <div class="features-inner">
         <div class="feature-card">
             <div class="feature-icon">₹</div>
@@ -89,4 +89,69 @@
     </div>
 </section>
 
+<!-- Video Modal -->
+<div id="videoModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="videoModalTitle">
+    <div class="modal-container">
+        <button id="closeVideoModal" class="modal-close" aria-label="Close modal">&times;</button>
+        <div class="modal-body">
+            <h2 id="videoModalTitle" class="modal-title">See How Spendly Works</h2>
+            <div class="video-wrapper">
+                <iframe id="videoIframe"
+                        data-src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                        src=""
+                        title="Spendly Demo Video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const seeHowItWorksBtn = document.getElementById('seeHowItWorksBtn');
+    const videoModal = document.getElementById('videoModal');
+    const closeVideoModal = document.getElementById('closeVideoModal');
+    const videoIframe = document.getElementById('videoIframe');
+
+    if (!seeHowItWorksBtn || !videoModal || !closeVideoModal || !videoIframe) return;
+
+    const videoSrc = videoIframe.getAttribute('data-src');
+
+    function openModal(e) {
+        if (e) e.preventDefault();
+        videoIframe.src = videoSrc + '?autoplay=1';
+        videoModal.classList.add('active');
+        videoModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        videoModal.classList.remove('active');
+        videoModal.setAttribute('aria-hidden', 'true');
+        videoIframe.src = '';
+        document.body.style.overflow = '';
+    }
+
+    seeHowItWorksBtn.addEventListener('click', openModal);
+    closeVideoModal.addEventListener('click', closeModal);
+
+    videoModal.addEventListener('click', function (e) {
+        if (e.target === videoModal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && videoModal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+});
+</script>
 {% endblock %}
