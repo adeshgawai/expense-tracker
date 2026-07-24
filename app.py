@@ -33,12 +33,12 @@ def logout():
 
 @app.route("/terms")
 def terms():
-    return "Terms & Conditions"
+    return render_template("terms.html")
 
 
 @app.route("/privacy")
 def privacy():
-    return "Privacy Policy"
+    return render_template("privacy.html")
 
 
 @app.route("/profile")
