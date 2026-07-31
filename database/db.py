@@ -77,3 +77,33 @@ def seed_db():
     conn.commit()
     conn.close()
 
+
+def get_user_by_email(email):
+    """Fetches a user record by email address (case-insensitive)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    clean_email = email.strip().lower() if email else ""
+    cursor.execute("SELECT * FROM users WHERE LOWER(email) = ?;", (clean_email,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
+
+
+def create_user(name, email, password):
+    """Creates a new user with werkzeug password hashing and returns inserted user_id."""
+    conn = get_db()
+    cursor = conn.cursor()
+    clean_name = name.strip() if name else ""
+    clean_email = email.strip().lower() if email else ""
+    password_hash = generate_password_hash(password)
+
+    cursor.execute(
+        "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?);",
+        (clean_name, clean_email, password_hash),
+    )
+    user_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return user_id
+
+
