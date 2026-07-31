@@ -1,6 +1,8 @@
 import os
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
+from werkzeug.security import check_password_hash
+
 from database.db import create_user, get_user_by_email, init_db, seed_db
 
 app = Flask(__name__)
@@ -23,6 +25,9 @@ def landing():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if session.get("user_id") and request.method == "GET":
+        return redirect(url_for("landing"))
+
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
@@ -61,19 +66,43 @@ def register():
     return render_template("register.html")
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("user_id") and request.method == "GET":
+        return redirect(url_for("landing"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        if not email or not password:
+            return render_template(
+                "login.html",
+                error="All fields are required.",
+                email=email,
+            )
+
+        user = get_user_by_email(email)
+        if not user or not check_password_hash(user["password_hash"], password):
+            return render_template(
+                "login.html",
+                error="Invalid email or password.",
+                email=email,
+            )
+
+        session["user_id"] = user["id"]
+        session["user_name"] = user["name"]
+        flash(f"Welcome back, {user['name']}!", "success")
+        return redirect(url_for("landing"))
+
     return render_template("login.html")
 
 
-
-# ------------------------------------------------------------------ #
-# Placeholder routes — students will implement these                  #
-# ------------------------------------------------------------------ #
-
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("landing"))
 
 
 @app.route("/terms")
