@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile — Spendly{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="profile-container">
+
+        <!-- Profile Header / Hero Card -->
+        <div class="profile-header-card">
+            <div class="profile-avatar">
+                <span>{{ user['name'][0].upper() if user['name'] else 'U' }}</span>
+            </div>
+            <div class="profile-identity">
+                <h1 class="profile-name">{{ user['name'] }}</h1>
+                <p class="profile-email">{{ user['email'] }}</p>
+                <div class="profile-meta">
+                    <span class="badge-status">Active Account</span>
+                    <span class="profile-joined">Member since {{ user['created_at'].split(' ')[0] if user['created_at'] else 'Recently' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Metrics Grid -->
+        <div class="profile-stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-details">
+                    <span class="stat-label">Total Expenses</span>
+                    <span class="stat-value">{{ stats['total_count'] }}</span>
+                </div>
+            </div>
+            <div class="stat-card accent-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-details">
+                    <span class="stat-label">Total Amount Spent</span>
+                    <span class="stat-value">₹{{ "%.2f"|format(stats['total_spent']) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Details Card -->
+        <div class="profile-details-card">
+            <h2 class="section-title">Account Details</h2>
+            <dl class="details-list">
+                <div class="detail-item">
+                    <dt>Full Name</dt>
+                    <dd>{{ user['name'] }}</dd>
+                </div>
+                <div class="detail-item">
+                    <dt>Email Address</dt>
+                    <dd>{{ user['email'] }}</dd>
+                </div>
+                <div class="detail-item">
+                    <dt>Registration Date</dt>
+                    <dd>{{ user['created_at'] }}</dd>
+                </div>
+                <div class="detail-item">
+                    <dt>Account Status</dt>
+                    <dd><span class="status-dot"></span> Active &amp; Verified</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Profile Quick Actions -->
+        <div class="profile-actions">
+            <a href="{{ url_for('add_expense') }}" class="btn-action primary">
+                <span>+</span> Add Expense
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn-action secondary">
+                Sign Out
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

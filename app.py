@@ -3,7 +3,14 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 
 from werkzeug.security import check_password_hash
 
-from database.db import create_user, get_user_by_email, init_db, seed_db
+from database.db import (
+    create_user,
+    get_user_by_email,
+    get_user_by_id,
+    get_user_profile_stats,
+    init_db,
+    seed_db,
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "spendly-dev-secret-key-2026")
@@ -26,7 +33,7 @@ def landing():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if session.get("user_id") and request.method == "GET":
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -61,7 +68,7 @@ def register():
         session["user_id"] = user_id
         session["user_name"] = name
         flash(f"Welcome to Spendly, {name}! Your account has been created successfully.", "success")
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
 
     return render_template("register.html")
 
@@ -69,7 +76,7 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("user_id") and request.method == "GET":
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
 
     if request.method == "POST":
         email = request.form.get("email", "").strip()
@@ -93,7 +100,7 @@ def login():
         session["user_id"] = user["id"]
         session["user_name"] = user["name"]
         flash(f"Welcome back, {user['name']}!", "success")
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
 
     return render_template("login.html")
 
@@ -117,7 +124,19 @@ def privacy():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to access your profile.", "warning")
+        return redirect(url_for("login"))
+
+    user = get_user_by_id(user_id)
+    if not user:
+        session.clear()
+        flash("User account not found. Please log in again.", "warning")
+        return redirect(url_for("login"))
+
+    stats = get_user_profile_stats(user_id)
+    return render_template("profile.html", user=user, stats=stats)
 
 
 @app.route("/expenses/add")

@@ -22,7 +22,7 @@ def test_register_page_get(client):
 
 
 def test_register_success(client):
-    """POST /register with valid inputs should create user, set session, and redirect to landing."""
+    """POST /register with valid inputs should create user, set session, and redirect to profile."""
     test_email = "newuser.test@example.com"
 
     response = client.post(
@@ -35,9 +35,9 @@ def test_register_success(client):
         follow_redirects=False,
     )
 
-    # Should redirect to home page
+    # Should redirect to profile page
     assert response.status_code == 302
-    assert response.headers["Location"] in ["/", "http://localhost/"]
+    assert response.headers["Location"] in ["/profile", "http://localhost/profile"]
 
     # Verify user exists in DB
     user = get_user_by_email(test_email)
