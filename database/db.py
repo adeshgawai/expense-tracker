@@ -107,3 +107,33 @@ def create_user(name, email, password):
     return user_id
 
 
+def get_user_by_id(user_id):
+    """Fetches a user record by user ID."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, email, created_at FROM users WHERE id = ?;", (user_id,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
+
+
+def get_user_profile_stats(user_id):
+    """Returns summary stats (total_count, total_spent) for a given user."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT 
+            COUNT(*) as total_count,
+            COALESCE(SUM(amount), 0.0) as total_spent
+        FROM expenses 
+        WHERE user_id = ?;
+        """,
+        (user_id,),
+    )
+    stats = cursor.fetchone()
+    conn.close()
+    return stats
+
+
+
