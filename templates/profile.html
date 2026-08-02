@@ -1,105 +1,102 @@
 {% extends "base.html" %}
 
-{% block title %}User Profile — Spendly{% endblock %}
+{% block title %}Profile — Spendly{% endblock %}
 
 {% block content %}
-<section class="profile-section">
-    <div class="profile-container">
+<section class="profile-dashboard-section">
+    <div class="profile-dashboard-container">
 
-        <!-- Profile Header / Hero Card -->
-        <div class="profile-header-card">
-            <div class="profile-avatar">
+        <!-- Top Profile Banner Card -->
+        <div class="user-profile-header-card">
+            <div class="user-avatar-circle">
                 <span>{{ user['name'][0].upper() if user['name'] else 'U' }}</span>
             </div>
-            <div class="profile-identity">
-                <h1 class="profile-name">{{ user['name'] }}</h1>
-                <p class="profile-email">{{ user['email'] }}</p>
-                <div class="profile-meta">
-                    <span class="badge-status">Active Account</span>
-                    <span class="profile-joined">Member since {{ user['created_at'].split(' ')[0] if user['created_at'] else 'Recently' }}</span>
-                </div>
+            <div class="user-identity-details">
+                <h1 class="user-display-name">{{ user['name'] }}</h1>
+                <p class="user-display-email">{{ user['email'] }}</p>
+                <p class="user-member-since">Member since {{ user['created_at'].split(' ')[0] if user['created_at'] else 'Recently' }}</p>
             </div>
         </div>
 
-        <!-- Summary Metrics Grid -->
-        <div class="profile-stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-details">
-                    <span class="stat-label">Total Expenses</span>
-                    <span class="stat-value">{{ stats['total_count'] }}</span>
-                </div>
+        <!-- 3 Stat Metrics Row -->
+        <div class="metrics-row-grid">
+            <div class="metric-card">
+                <span class="metric-badge">TOTAL SPENT</span>
+                <div class="metric-value">₹{{ "%.2f"|format(stats['total_spent']) }}</div>
             </div>
-            <div class="stat-card accent-card">
-                <div class="stat-icon">💰</div>
-                <div class="stat-details">
-                    <span class="stat-label">Total Amount Spent</span>
-                    <span class="stat-value">₹{{ "%.2f"|format(stats['total_spent']) }}</span>
-                </div>
+            <div class="metric-card">
+                <span class="metric-badge">TRANSACTIONS</span>
+                <div class="metric-value">{{ stats['total_count'] }}</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-badge">TOP CATEGORY</span>
+                <div class="metric-value">{{ stats['top_category'] }}</div>
             </div>
         </div>
 
-        <!-- Account Details Card -->
-        <div class="profile-details-card">
-            <h2 class="section-title">Account Details</h2>
-            <dl class="details-list">
-                <div class="detail-item">
-                    <dt>Full Name</dt>
-                    <dd>{{ user['name'] }}</dd>
-                </div>
-                <div class="detail-item">
-                    <dt>Email Address</dt>
-                    <dd>{{ user['email'] }}</dd>
-                </div>
-                <div class="detail-item">
-                    <dt>Registration Date</dt>
-                    <dd>{{ user['created_at'] }}</dd>
-                </div>
-                <div class="detail-item">
-                    <dt>Account Status</dt>
-                    <dd><span class="status-dot"></span> Active &amp; Verified</dd>
-                </div>
-            </dl>
-        </div>
+        <!-- 2-Column Main Layout: Recent Transactions (Left) + By Category (Right) -->
+        <div class="dashboard-columns-grid">
 
-        <!-- Expenses by Category Card -->
-        <div class="profile-details-card">
-            <div class="card-header-flex">
-                <h2 class="section-title">Spending by Category</h2>
-                <span class="category-count-badge">{{ category_expenses|length }} {{ 'Category' if category_expenses|length == 1 else 'Categories' }}</span>
+            <!-- Left Column: Recent Transactions -->
+            <div class="dashboard-card transactions-card">
+                <h2 class="card-section-title">Recent Transactions</h2>
+                
+                {% if recent_transactions %}
+                <div class="table-responsive">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>DATE</th>
+                                <th>DESCRIPTION</th>
+                                <th>CATEGORY</th>
+                                <th class="text-right">AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in recent_transactions %}
+                            <tr>
+                                <td class="tx-date">{{ tx['date'] }}</td>
+                                <td class="tx-desc">{{ tx['description'] or '-' }}</td>
+                                <td class="tx-category">
+                                    <span class="category-pill category-{{ tx['category']|lower }}">
+                                        {{ tx['category'] }}
+                                    </span>
+                                </td>
+                                <td class="tx-amount text-right">₹{{ "%.2f"|format(tx['amount']) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state-text">No transactions found. Click "+ Add Expense" to start tracking!</p>
+                {% endif %}
             </div>
-            
-            {% if category_expenses %}
-            <div class="category-list">
-                {% for cat in category_expenses %}
-                {% set pct = (cat['category_total'] / stats['total_spent'] * 100) if stats['total_spent'] > 0 else 0 %}
-                <div class="category-item">
-                    <div class="category-info">
-                        <div class="category-title-group">
-                            <span class="category-name">{{ cat['category'] }}</span>
-                            <span class="category-items-count">{{ cat['item_count'] }} {{ 'expense' if cat['item_count'] == 1 else 'expenses' }}</span>
+
+            <!-- Right Column: By Category -->
+            <div class="dashboard-card categories-card">
+                <h2 class="card-section-title">By Category</h2>
+
+                {% if category_expenses %}
+                <div class="by-category-list">
+                    {% for cat in category_expenses %}
+                    {% set pct = (cat['category_total'] / stats['total_spent'] * 100) if stats['total_spent'] > 0 else 0 %}
+                    <div class="by-category-item">
+                        <div class="by-category-header">
+                            <span class="by-category-name">{{ cat['category'] }}</span>
+                            <span class="by-category-total">₹{{ "%.2f"|format(cat['category_total']) }}</span>
                         </div>
-                        <div class="category-amount">₹{{ "%.2f"|format(cat['category_total']) }}</div>
+                        <div class="category-bar-track">
+                            <div class="category-bar-fill fill-{{ cat['category']|lower }}" style="width: {{ '%.1f'|format(pct) }}%;"></div>
+                        </div>
                     </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: {{ '%.1f'|format(pct) }}%;"></div>
-                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                {% else %}
+                <p class="empty-state-text">No category spending data yet.</p>
+                {% endif %}
             </div>
-            {% else %}
-            <p class="empty-category-text">No expenses recorded yet. Click "Add Expense" to get started!</p>
-            {% endif %}
-        </div>
 
-        <!-- Profile Quick Actions -->
-        <div class="profile-actions">
-            <a href="{{ url_for('add_expense') }}" class="btn-action primary">
-                <span>+</span> Add Expense
-            </a>
-            <a href="{{ url_for('logout') }}" class="btn-action secondary">
-                Sign Out
-            </a>
         </div>
 
     </div>

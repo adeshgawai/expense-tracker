@@ -118,7 +118,7 @@ def get_user_by_id(user_id):
 
 
 def get_user_profile_stats(user_id):
-    """Returns summary stats (total_count, total_spent) for a given user."""
+    """Returns summary stats (total_count, total_spent, top_category) for a given user."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -131,9 +131,30 @@ def get_user_profile_stats(user_id):
         """,
         (user_id,),
     )
-    stats = cursor.fetchone()
+    row = cursor.fetchone()
+    total_count = row["total_count"] if row else 0
+    total_spent = row["total_spent"] if row else 0.0
+
+    cursor.execute(
+        """
+        SELECT category
+        FROM expenses
+        WHERE user_id = ?
+        GROUP BY category
+        ORDER BY SUM(amount) DESC
+        LIMIT 1;
+        """,
+        (user_id,),
+    )
+    top_cat_row = cursor.fetchone()
+    top_category = top_cat_row["category"] if top_cat_row else "None"
+
     conn.close()
-    return stats
+    return {
+        "total_count": total_count,
+        "total_spent": total_spent,
+        "top_category": top_category,
+    }
 
 
 def get_user_category_expenses(user_id):
@@ -156,6 +177,26 @@ def get_user_category_expenses(user_id):
     categories = cursor.fetchall()
     conn.close()
     return categories
+
+
+def get_user_recent_transactions(user_id, limit=10):
+    """Returns recent expenses for a given user sorted by date descending."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, amount, category, date, description
+        FROM expenses
+        WHERE user_id = ?
+        ORDER BY date DESC, id DESC
+        LIMIT ?;
+        """,
+        (user_id, limit),
+    )
+    transactions = cursor.fetchall()
+    conn.close()
+    return transactions
+
 
 
 
