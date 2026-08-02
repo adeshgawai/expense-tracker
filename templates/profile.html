@@ -18,6 +18,55 @@
             </div>
         </div>
 
+        <!-- Date Range Filter Card -->
+        <div class="dashboard-card date-filter-card">
+            <form method="GET" action="{{ url_for('profile') }}" class="date-filter-form" id="dateFilterForm">
+                <div class="filter-form-header">
+                    <span class="filter-title">
+                        <svg class="filter-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Filter Expenses by Date
+                    </span>
+                    {% if start_date or end_date %}
+                    <span class="active-filter-badge">
+                        Active Filter: {{ start_date if start_date else 'Beginning' }} to {{ end_date if end_date else 'Today' }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="filter-inputs-row">
+                    <div class="filter-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="date-input">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="date-input">
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary filter-submit-btn">Apply Filter</button>
+                        {% if start_date or end_date %}
+                        <a href="{{ url_for('profile') }}" class="btn btn-secondary filter-clear-btn">Reset</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="preset-chips-row">
+                    <span class="preset-label">Quick Presets:</span>
+                    <button type="button" class="preset-chip" data-preset="this_month">This Month</button>
+                    <button type="button" class="preset-chip" data-preset="last_30">Last 30 Days</button>
+                    <button type="button" class="preset-chip" data-preset="this_year">This Year</button>
+                    <button type="button" class="preset-chip" data-preset="all_time">All Time</button>
+                </div>
+            </form>
+        </div>
+
         <!-- 3 Stat Metrics Row -->
         <div class="metrics-row-grid">
             <div class="metric-card">
@@ -58,7 +107,7 @@
                                 <td class="tx-date">{{ tx['date'] }}</td>
                                 <td class="tx-desc">{{ tx['description'] or '-' }}</td>
                                 <td class="tx-category">
-                                    <span class="category-pill category-{{ tx['category']|lower }}">
+                                    <span class="category-pill category-{{ tx['category']|lower|replace(' ', '-') }}">
                                         {{ tx['category'] }}
                                     </span>
                                 </td>
@@ -87,7 +136,7 @@
                             <span class="by-category-total">₹{{ "%.2f"|format(cat['category_total']) }}</span>
                         </div>
                         <div class="category-bar-track">
-                            <div class="category-bar-fill fill-{{ cat['category']|lower }}" style="width: {{ '%.1f'|format(pct) }}%;"></div>
+                            <div class="category-bar-fill fill-{{ cat['category']|lower|replace(' ', '-') }}" style="width: {{ '%.1f'|format(pct) }}%;"></div>
                         </div>
                     </div>
                     {% endfor %}

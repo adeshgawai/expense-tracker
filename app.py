@@ -1,6 +1,6 @@
 import os
+from datetime import datetime
 from flask import Flask, flash, redirect, render_template, request, session, url_for
-
 from werkzeug.security import check_password_hash
 
 from database.db import (
@@ -21,6 +21,17 @@ app.secret_key = os.environ.get("SECRET_KEY", "spendly-dev-secret-key-2026")
 with app.app_context():
     init_db()
     seed_db()
+
+
+def is_valid_date(date_str):
+    """Validates if a string is a valid YYYY-MM-DD date."""
+    if not date_str:
+        return False
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
 
 
 # ------------------------------------------------------------------ #
@@ -137,15 +148,34 @@ def profile():
         flash("User account not found. Please log in again.", "warning")
         return redirect(url_for("login"))
 
-    stats = get_user_profile_stats(user_id)
-    category_expenses = get_user_category_expenses(user_id)
-    recent_transactions = get_user_recent_transactions(user_id, limit=10)
+    raw_start = request.args.get("start_date", "").strip()
+    raw_end = request.args.get("end_date", "").strip()
+
+    start_date = raw_start if is_valid_date(raw_start) else None
+    end_date = raw_end if is_valid_date(raw_end) else None
+
+    if raw_start and not start_date:
+        flash("Invalid start date format. Please use YYYY-MM-DD.", "warning")
+    if raw_end and not end_date:
+        flash("Invalid end date format. Please use YYYY-MM-DD.", "warning")
+
+    if start_date and end_date and start_date > end_date:
+        start_date, end_date = end_date, start_date
+        flash("Start date was after end date. Range was automatically adjusted.", "info")
+
+    limit = 50 if (start_date or end_date) else 10
+    stats = get_user_profile_stats(user_id, start_date=start_date, end_date=end_date)
+    category_expenses = get_user_category_expenses(user_id, start_date=start_date, end_date=end_date)
+    recent_transactions = get_user_recent_transactions(user_id, limit=limit, start_date=start_date, end_date=end_date)
+
     return render_template(
         "profile.html",
         user=user,
         stats=stats,
         category_expenses=category_expenses,
         recent_transactions=recent_transactions,
+        start_date=start_date or "",
+        end_date=end_date or "",
     )
 
 
@@ -166,4 +196,3 @@ def delete_expense(id):
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
-

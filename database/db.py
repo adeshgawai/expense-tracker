@@ -117,34 +117,53 @@ def get_user_by_id(user_id):
     return user
 
 
-def get_user_profile_stats(user_id):
-    """Returns summary stats (total_count, total_spent, top_category) for a given user."""
+def _build_user_date_where(user_id, start_date=None, end_date=None):
+    """Helper to build WHERE clause and parameter list for user date filtering."""
+    query_where = ["user_id = ?"]
+    params = [user_id]
+
+    if start_date:
+        query_where.append("date >= ?")
+        params.append(start_date)
+    if end_date:
+        query_where.append("date <= ?")
+        params.append(end_date)
+
+    where_clause = " AND ".join(query_where)
+    return where_clause, params
+
+
+def get_user_profile_stats(user_id, start_date=None, end_date=None):
+    """Returns summary stats (total_count, total_spent, top_category) for a given user, optionally filtered by date range."""
     conn = get_db()
     cursor = conn.cursor()
+
+    where_clause, params = _build_user_date_where(user_id, start_date, end_date)
+
     cursor.execute(
-        """
+        f"""
         SELECT 
             COUNT(*) as total_count,
             COALESCE(SUM(amount), 0.0) as total_spent
         FROM expenses 
-        WHERE user_id = ?;
+        WHERE {where_clause};
         """,
-        (user_id,),
+        params,
     )
     row = cursor.fetchone()
     total_count = row["total_count"] if row else 0
     total_spent = row["total_spent"] if row else 0.0
 
     cursor.execute(
-        """
+        f"""
         SELECT category
         FROM expenses
-        WHERE user_id = ?
+        WHERE {where_clause}
         GROUP BY category
         ORDER BY SUM(amount) DESC
         LIMIT 1;
         """,
-        (user_id,),
+        params,
     )
     top_cat_row = cursor.fetchone()
     top_category = top_cat_row["category"] if top_cat_row else "None"
@@ -157,41 +176,48 @@ def get_user_profile_stats(user_id):
     }
 
 
-def get_user_category_expenses(user_id):
-    """Returns category-wise spending breakdown (category, item_count, category_total) for a given user."""
+def get_user_category_expenses(user_id, start_date=None, end_date=None):
+    """Returns category-wise spending breakdown (category, item_count, category_total) for a given user, optionally filtered by date range."""
     conn = get_db()
     cursor = conn.cursor()
+
+    where_clause, params = _build_user_date_where(user_id, start_date, end_date)
+
     cursor.execute(
-        """
+        f"""
         SELECT 
             category,
             COUNT(*) as item_count,
             COALESCE(SUM(amount), 0.0) as category_total
         FROM expenses
-        WHERE user_id = ?
+        WHERE {where_clause}
         GROUP BY category
         ORDER BY category_total DESC;
         """,
-        (user_id,),
+        params,
     )
     categories = cursor.fetchall()
     conn.close()
     return categories
 
 
-def get_user_recent_transactions(user_id, limit=10):
-    """Returns recent expenses for a given user sorted by date descending."""
+def get_user_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
+    """Returns recent expenses for a given user sorted by date descending, optionally filtered by date range."""
     conn = get_db()
     cursor = conn.cursor()
+
+    where_clause, params = _build_user_date_where(user_id, start_date, end_date)
+    params_with_limit = params + [limit]
+
     cursor.execute(
-        """
+        f"""
         SELECT id, amount, category, date, description
         FROM expenses
-        WHERE user_id = ?
+        WHERE {where_clause}
         ORDER BY date DESC, id DESC
         LIMIT ?;
         """,
-        (user_id, limit),
+        params_with_limit,
     )
     transactions = cursor.fetchall()
     conn.close()
