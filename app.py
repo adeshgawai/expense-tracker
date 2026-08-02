@@ -7,6 +7,7 @@ from database.db import (
     create_user,
     get_user_by_email,
     get_user_by_id,
+    get_user_category_expenses,
     get_user_profile_stats,
     init_db,
     seed_db,
@@ -136,7 +137,13 @@ def profile():
         return redirect(url_for("login"))
 
     stats = get_user_profile_stats(user_id)
-    return render_template("profile.html", user=user, stats=stats)
+    category_expenses = get_user_category_expenses(user_id)
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        category_expenses=category_expenses,
+    )
 
 
 @app.route("/expenses/add")

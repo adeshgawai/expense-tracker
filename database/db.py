@@ -136,4 +136,27 @@ def get_user_profile_stats(user_id):
     return stats
 
 
+def get_user_category_expenses(user_id):
+    """Returns category-wise spending breakdown (category, item_count, category_total) for a given user."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT 
+            category,
+            COUNT(*) as item_count,
+            COALESCE(SUM(amount), 0.0) as category_total
+        FROM expenses
+        WHERE user_id = ?
+        GROUP BY category
+        ORDER BY category_total DESC;
+        """,
+        (user_id,),
+    )
+    categories = cursor.fetchall()
+    conn.close()
+    return categories
+
+
+
 

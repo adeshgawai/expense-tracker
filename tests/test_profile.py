@@ -18,7 +18,7 @@ def test_profile_unauthenticated_redirects(client):
 
 
 def test_profile_authenticated_success(client):
-    """GET /profile with valid authenticated user session should render profile page."""
+    """GET /profile with valid authenticated user session should render profile page and category breakdown."""
     with client.session_transaction() as sess:
         sess["user_id"] = 1
         sess["user_name"] = "Demo User"
@@ -29,6 +29,8 @@ def test_profile_authenticated_success(client):
     assert b"demo@spendly.com" in response.data
     assert b"Total Expenses" in response.data
     assert b"Total Amount Spent" in response.data
+    assert b"Spending by Category" in response.data
+    assert b"Food" in response.data
 
 
 def test_profile_invalid_user_session(client):
