@@ -55,4 +55,40 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
+
+    // Launch Countdown Timer for Coming Soon / Analytics page
+    const countdownTimer = document.getElementById("countdownTimer");
+    if (countdownTimer) {
+        let targetTimestamp = localStorage.getItem("spendly_analytics_launch_ts");
+        if (!targetTimestamp) {
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 28);
+            futureDate.setHours(futureDate.getHours() + 14);
+            targetTimestamp = String(futureDate.getTime());
+            localStorage.setItem("spendly_analytics_launch_ts", targetTimestamp);
+        }
+
+        const daysEl = document.getElementById("timerDays");
+        const hoursEl = document.getElementById("timerHours");
+        const minutesEl = document.getElementById("timerMinutes");
+        const secondsEl = document.getElementById("timerSeconds");
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = Math.max(0, parseInt(targetTimestamp, 10) - now);
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+            if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+            if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+            if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
 });

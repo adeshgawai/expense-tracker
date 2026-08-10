@@ -8,13 +8,24 @@
 
         <!-- Top Profile Banner Card -->
         <div class="user-profile-header-card">
-            <div class="user-avatar-circle">
-                <span>{{ user['name'][0].upper() if user['name'] else 'U' }}</span>
+            <div class="user-profile-info-group">
+                <div class="user-avatar-circle">
+                    <span>{{ user['name'][0].upper() if user['name'] else 'U' }}</span>
+                </div>
+                <div class="user-identity-details">
+                    <h1 class="user-display-name">{{ user['name'] }}</h1>
+                    <p class="user-display-email">{{ user['email'] }}</p>
+                    <p class="user-member-since">Member since {{ user['created_at'].split(' ')[0] if user['created_at'] else 'Recently' }}</p>
+                </div>
             </div>
-            <div class="user-identity-details">
-                <h1 class="user-display-name">{{ user['name'] }}</h1>
-                <p class="user-display-email">{{ user['email'] }}</p>
-                <p class="user-member-since">Member since {{ user['created_at'].split(' ')[0] if user['created_at'] else 'Recently' }}</p>
+            <div class="user-profile-actions">
+                <a href="{{ url_for('add_expense') }}" class="btn btn-primary add-expense-cta-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Expense
+                </a>
             </div>
         </div>
 
@@ -88,7 +99,10 @@
 
             <!-- Left Column: Recent Transactions -->
             <div class="dashboard-card transactions-card">
-                <h2 class="card-section-title">Recent Transactions</h2>
+                <div class="card-header-row">
+                    <h2 class="card-section-title">Recent Transactions</h2>
+                    <a href="{{ url_for('add_expense') }}" class="card-header-action">+ Add Expense</a>
+                </div>
                 
                 {% if recent_transactions %}
                 <div class="table-responsive">
@@ -118,7 +132,7 @@
                     </table>
                 </div>
                 {% else %}
-                <p class="empty-state-text">No transactions found. Click "+ Add Expense" to start tracking!</p>
+                <p class="empty-state-text">No transactions found. <a href="{{ url_for('add_expense') }}" class="empty-state-link">+ Add Expense</a> to start tracking!</p>
                 {% endif %}
             </div>
 

@@ -7,4 +7,5 @@ __pycache__/
 .DS_Store
 .claude/plans/
 flow-of-project
-
+mcp_config.json
+.agents/mcp_config.json

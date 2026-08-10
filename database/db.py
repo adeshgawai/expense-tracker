@@ -224,6 +224,19 @@ def get_user_recent_transactions(user_id, limit=10, start_date=None, end_date=No
     return transactions
 
 
-
-
-
+def create_expense(user_id, amount, category, date, description=""):
+    """Inserts a new expense record for a user using parameterized query and returns inserted expense id."""
+    conn = get_db()
+    cursor = conn.cursor()
+    clean_desc = description.strip() if description else ""
+    cursor.execute(
+        """
+        INSERT INTO expenses (user_id, amount, category, date, description)
+        VALUES (?, ?, ?, ?, ?);
+        """,
+        (user_id, float(amount), category.strip(), date.strip(), clean_desc),
+    )
+    expense_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return expense_id

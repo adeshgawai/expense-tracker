@@ -20,6 +20,9 @@
             </a>
             <div class="nav-links">
                 {% if session.get('user_id') %}
+                    <a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">Dashboard</a>
+                    <a href="{{ url_for('analytics') }}" class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}">Analytics</a>
+                    <a href="{{ url_for('add_expense') }}" class="nav-link {% if request.endpoint == 'add_expense' %}active{% endif %}">+ Add Expense</a>
                     <span class="nav-user">Hello, {{ session.get('user_name') }}</span>
                     <a href="{{ url_for('logout') }}" class="nav-cta">Sign out</a>
                 {% else %}
