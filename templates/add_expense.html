@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense — Spendly{% endblock %}
+
+{% block content %}
+<section class="expense-page-section">
+    <div class="expense-page-container">
+
+        <div class="expense-page-header">
+            <a href="{{ url_for('profile') }}" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to Dashboard
+            </a>
+            <h1 class="expense-page-title">Add New Expense</h1>
+            <p class="expense-page-subtitle">Record a transaction to keep your spending organized and up to date.</p>
+        </div>
+
+        <div class="expense-form-card">
+            {% if error %}
+            <div class="form-error-alert" role="alert">
+                <svg class="error-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('add_expense') }}" class="expense-form" id="addExpenseForm">
+                
+                <!-- Amount Field -->
+                <div class="form-group">
+                    <label for="amount" class="form-label">Amount (₹) <span class="required-star">*</span></label>
+                    <div class="input-currency-wrapper">
+                        <span class="currency-symbol">₹</span>
+                        <input type="number"
+                               step="0.01"
+                               min="0.01"
+                               id="amount"
+                               name="amount"
+                               class="form-input currency-input"
+                               placeholder="0.00"
+                               value="{{ amount or '' }}"
+                               required
+                               autofocus>
+                    </div>
+                    <span class="form-help-text">Enter amount in INR (e.g. 250.50). Must be greater than 0.</span>
+                </div>
+
+                <!-- Category Field -->
+                <div class="form-group">
+                    <label for="category" class="form-label">Category <span class="required-star">*</span></label>
+                    <div class="select-wrapper">
+                        <select id="category" name="category" class="form-select" required>
+                            <option value="" disabled {% if not category %}selected{% endif %}>Select a spending category...</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date Field -->
+                <div class="form-group">
+                    <label for="date" class="form-label">Transaction Date <span class="required-star">*</span></label>
+                    <input type="date"
+                           id="date"
+                           name="date"
+                           class="form-input date-picker-input"
+                           value="{{ date or '' }}"
+                           required>
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-group">
+                    <label for="description" class="form-label">Description <span class="optional-tag">(Optional)</span></label>
+                    <input type="text"
+                           id="description"
+                           name="description"
+                           class="form-input"
+                           placeholder="e.g., Dinner with friends, Grocery run, Electricity bill"
+                           value="{{ description or '' }}"
+                           maxlength="200">
+                    <span class="form-help-text">Add notes or merchant names to easily identify this transaction.</span>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="form-actions-group">
+                    <button type="submit" class="btn btn-primary submit-expense-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Save Expense
+                    </button>
+                    <a href="{{ url_for('profile') }}" class="btn btn-secondary cancel-expense-btn">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

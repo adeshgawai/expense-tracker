@@ -111,7 +111,8 @@ pytest
 | `GET /login` | Implemented — renders `login.html` |
 | `GET /logout` | Implemented — clears session and redirects to `/` |
 | `GET /profile` | Implemented — renders `profile.html` |
-| `GET /expenses/add` | Stub — Step 7 |
+| `GET /expenses/add` | Implemented — renders `add_expense.html` |
+| `POST /expenses/add` | Implemented — creates expense and redirects to `/profile` |
 | `GET /expenses/<id>/edit` | Stub — Step 8 |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |
 

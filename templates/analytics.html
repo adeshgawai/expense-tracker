@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block content %}
+<section class="coming-soon-section">
+    <div class="coming-soon-backdrop-grid" aria-hidden="true"></div>
+
+    <div class="coming-soon-container">
+        
+        <!-- Eyebrow Badge -->
+        <div class="coming-soon-badge-wrapper">
+            <div class="coming-soon-badge">
+                <span class="badge-pulse-dot"></span>
+                <span class="badge-text">COMING SOON</span>
+            </div>
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="coming-soon-title">
+            We're building<br>
+            <span class="title-italic">something</span><br>
+            worth waiting for.
+        </h1>
+
+        <!-- Subheading -->
+        <p class="coming-soon-desc">
+            A new kind of analytics &mdash; thoughtful tools at the intersection of design and personal finance. Leave your email and we'll let you know when we launch.
+        </p>
+
+        <!-- Notification Form -->
+        <form class="coming-soon-form" method="POST" action="{{ url_for('analytics') }}" id="notifyForm">
+            <div class="coming-soon-input-group">
+                <input 
+                    type="email" 
+                    name="email" 
+                    id="notifyEmail"
+                    class="coming-soon-input" 
+                    placeholder="Enter your email address" 
+                    value="{{ user['email'] if user and user['email'] else '' }}" 
+                    required 
+                    autocomplete="email"
+                >
+                <button type="submit" class="coming-soon-btn" id="notifyBtn">
+                    <span>Notify me</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Countdown Timer -->
+        <div class="coming-soon-timer-wrapper">
+            <div class="coming-soon-timer" id="countdownTimer" aria-label="Launch Countdown Timer">
+                <div class="timer-unit">
+                    <span class="timer-value" id="timerDays">00</span>
+                    <span class="timer-label">DAYS</span>
+                </div>
+                <div class="timer-unit">
+                    <span class="timer-value" id="timerHours">00</span>
+                    <span class="timer-label">HRS</span>
+                </div>
+                <div class="timer-unit">
+                    <span class="timer-value" id="timerMinutes">00</span>
+                    <span class="timer-label">MIN</span>
+                </div>
+                <div class="timer-unit">
+                    <span class="timer-value" id="timerSeconds">00</span>
+                    <span class="timer-label">SEC</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Modules Teaser / Badges -->
+        <div class="coming-soon-preview-pills">
+            <span class="preview-pill">◈ Smart Category Forecasting</span>
+            <span class="preview-pill">◈ Monthly Trend Visualizations</span>
+            <span class="preview-pill">◈ Budget Anomaly Alerts</span>
+            <span class="preview-pill">◈ PDF &amp; CSV Tax Reports</span>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

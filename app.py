@@ -4,6 +4,7 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from werkzeug.security import check_password_hash
 
 from database.db import (
+    create_expense,
     create_user,
     get_user_by_email,
     get_user_by_id,
@@ -179,9 +180,122 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/analytics", methods=["GET", "POST"])
+def analytics():
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to access analytics.", "warning")
+        return redirect(url_for("login"))
+
+    user = get_user_by_id(user_id)
+    if not user:
+        session.clear()
+        flash("User account not found. Please log in again.", "warning")
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        if email:
+            flash("Thank you! We'll notify you as soon as Spendly Analytics launches.", "success")
+        return redirect(url_for("analytics"))
+
+    return render_template("analytics.html", user=user)
+
+
+
+ALLOWED_CATEGORIES = [
+    "Food",
+    "Transport",
+    "Bills",
+    "Health",
+    "Entertainment",
+    "Shopping",
+    "Other",
+]
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to add an expense.", "warning")
+        return redirect(url_for("login"))
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    if request.method == "POST":
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date_raw = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        # Validation: required fields
+        if not amount_raw or not category or not date_raw:
+            return render_template(
+                "add_expense.html",
+                error="Amount, Category, and Date are required.",
+                amount=amount_raw,
+                category=category,
+                date=date_raw or today_str,
+                description=description,
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        # Validation: positive numeric amount
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                raise ValueError("Amount must be positive.")
+        except ValueError:
+            return render_template(
+                "add_expense.html",
+                error="Please enter a valid positive amount.",
+                amount=amount_raw,
+                category=category,
+                date=date_raw,
+                description=description,
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        # Validation: category must be in allowed categories
+        if category not in ALLOWED_CATEGORIES:
+            return render_template(
+                "add_expense.html",
+                error="Please select a valid expense category.",
+                amount=amount_raw,
+                category=category,
+                date=date_raw,
+                description=description,
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        # Validation: date must be valid YYYY-MM-DD
+        if not is_valid_date(date_raw):
+            return render_template(
+                "add_expense.html",
+                error="Please enter a valid date in YYYY-MM-DD format.",
+                amount=amount_raw,
+                category=category,
+                date=date_raw,
+                description=description,
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        create_expense(
+            user_id=user_id,
+            amount=amount,
+            category=category,
+            date=date_raw,
+            description=description,
+        )
+        flash("Expense added successfully!", "success")
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "add_expense.html",
+        date=today_str,
+        categories=ALLOWED_CATEGORIES,
+    )
 
 
 @app.route("/expenses/<int:id>/edit")
