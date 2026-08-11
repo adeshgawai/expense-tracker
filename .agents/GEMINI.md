@@ -113,7 +113,8 @@ pytest
 | `GET /profile` | Implemented — renders `profile.html` |
 | `GET /expenses/add` | Implemented — renders `add_expense.html` |
 | `POST /expenses/add` | Implemented — creates expense and redirects to `/profile` |
-| `GET /expenses/<id>/edit` | Stub — Step 8 |
+| `GET /expenses/<id>/edit` | Implemented — renders `edit_expense.html` |
+| `POST /expenses/<id>/edit` | Implemented — updates expense and redirects to `/profile` |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |
 
 **Do not implement a stub route unless the active task explicitly targets that step.**

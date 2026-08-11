@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash
 from database.db import (
     create_expense,
     create_user,
+    get_expense_by_id,
     get_user_by_email,
     get_user_by_id,
     get_user_category_expenses,
@@ -13,6 +14,7 @@ from database.db import (
     get_user_recent_transactions,
     init_db,
     seed_db,
+    update_expense,
 )
 
 app = Flask(__name__)
@@ -298,9 +300,85 @@ def add_expense():
     )
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to edit an expense.", "warning")
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id, user_id=user_id)
+    if not expense:
+        flash("Expense not found or unauthorized access.", "warning")
+        return redirect(url_for("profile"))
+
+    if request.method == "POST":
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date_raw = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        # Validation: required fields
+        if not amount_raw or not category or not date_raw:
+            return render_template(
+                "edit_expense.html",
+                error="Amount, Category, and Date are required.",
+                expense={"id": id, "amount": amount_raw, "category": category, "date": date_raw, "description": description},
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        # Validation: positive numeric amount
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                raise ValueError("Amount must be positive.")
+        except ValueError:
+            return render_template(
+                "edit_expense.html",
+                error="Please enter a valid positive amount.",
+                expense={"id": id, "amount": amount_raw, "category": category, "date": date_raw, "description": description},
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        # Validation: category
+        if category not in ALLOWED_CATEGORIES:
+            return render_template(
+                "edit_expense.html",
+                error="Please select a valid expense category.",
+                expense={"id": id, "amount": amount_raw, "category": category, "date": date_raw, "description": description},
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        # Validation: date
+        if not is_valid_date(date_raw):
+            return render_template(
+                "edit_expense.html",
+                error="Please enter a valid date in YYYY-MM-DD format.",
+                expense={"id": id, "amount": amount_raw, "category": category, "date": date_raw, "description": description},
+                categories=ALLOWED_CATEGORIES,
+            )
+
+        success = update_expense(
+            expense_id=id,
+            user_id=user_id,
+            amount=amount,
+            category=category,
+            date=date_raw,
+            description=description,
+        )
+
+        if success:
+            flash("Expense updated successfully!", "success")
+        else:
+            flash("Failed to update expense.", "danger")
+
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "edit_expense.html",
+        expense=expense,
+        categories=ALLOWED_CATEGORIES,
+    )
 
 
 @app.route("/expenses/<int:id>/delete")
