@@ -240,3 +240,36 @@ def create_expense(user_id, amount, category, date, description=""):
     conn.commit()
     conn.close()
     return expense_id
+
+
+def get_expense_by_id(expense_id, user_id=None):
+    """Fetches an expense by ID, optionally verifying ownership by user_id."""
+    conn = get_db()
+    cursor = conn.cursor()
+    if user_id is not None:
+        cursor.execute("SELECT * FROM expenses WHERE id = ? AND user_id = ?;", (expense_id, user_id))
+    else:
+        cursor.execute("SELECT * FROM expenses WHERE id = ?;", (expense_id,))
+    expense = cursor.fetchone()
+    conn.close()
+    return expense
+
+
+def update_expense(expense_id, user_id, amount, category, date, description=""):
+    """Updates an expense record for a specific user using parameterized query."""
+    conn = get_db()
+    cursor = conn.cursor()
+    clean_desc = description.strip() if description else ""
+    cursor.execute(
+        """
+        UPDATE expenses
+        SET amount = ?, category = ?, date = ?, description = ?
+        WHERE id = ? AND user_id = ?;
+        """,
+        (float(amount), category.strip(), date.strip(), clean_desc, expense_id, user_id),
+    )
+    conn.commit()
+    rows_affected = cursor.rowcount
+    conn.close()
+    return rows_affected > 0
+
